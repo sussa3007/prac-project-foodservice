@@ -27,7 +27,6 @@ public class Order extends Audit {
     @OneToMany(mappedBy = "order")
     private List<OrderFood> orderFoods = new ArrayList<>();
 
-    @OneToMany
-    @JoinColumn(name = "option_id")
+    @OneToMany(mappedBy = "order")
     private List<Option> options = new ArrayList<>();
 }

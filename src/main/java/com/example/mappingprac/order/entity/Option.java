@@ -22,6 +22,10 @@ public class Option {
     @Column(nullable = false)
     private int optionCount;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
     static private enum Options {
         NONE_OPTIONS(0, "옵션 없음"),
         ADD_PATTY(1, "패티 추가"),
