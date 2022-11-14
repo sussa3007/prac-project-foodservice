@@ -74,4 +74,16 @@ public class MemberController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /* Test member 생성*/
+    @GetMapping("/test")
+    public ResponseEntity testPost() {
+        MemberDto.Post test1 = new MemberDto.Post("test1", "test1@gmail.com", "010-1111-1111");
+        MemberDto.Post test2 = new MemberDto.Post("test2", "test2@gmail.com", "010-1111-1112");
+        MemberDto.Post test3 = new MemberDto.Post("test3", "test3@gmail.com", "010-1111-1113");
+        memberService.createMember(test1.postDtoToMember());
+        memberService.createMember(test2.postDtoToMember());
+        memberService.createMember(test3.postDtoToMember());
+        return new ResponseEntity<>("Good",HttpStatus.OK);
+    }
+
 }

@@ -26,18 +26,6 @@ public class FoodController {
 
     private final FoodService foodService;
 
-    /* Test Data 생성 */
-    @GetMapping("/test")
-    public ResponseEntity testPost() {
-        Food food1 = createTestFood(1L, "AAA");
-        Food food2 = createTestFood(2L, "BBB");
-        Food food3 = createTestFood(3L, "CCC");
-        foodService.createFood(food1);
-        foodService.createFood(food2);
-        foodService.createFood(food3);
-
-        return new ResponseEntity<>("Good",HttpStatus.OK);
-    }
 
     @PostMapping
     public ResponseEntity postFood(
@@ -100,6 +88,21 @@ public class FoodController {
 
 
 
+
+
+
+    /* Test Data 생성 */
+    @GetMapping("/test")
+    public ResponseEntity testPost() {
+        Food food1 = createTestFood(1L, "AAA");
+        Food food2 = createTestFood(2L, "BBB");
+        Food food3 = createTestFood(3L, "CCC");
+        foodService.createFood(food1);
+        foodService.createFood(food2);
+        foodService.createFood(food3);
+
+        return new ResponseEntity<>("Good",HttpStatus.OK);
+    }
     private Food createTestFood(Long foodId,String foodCode) {
         return Food.builder()
                 .name("Cheese Bugger"+foodId)
