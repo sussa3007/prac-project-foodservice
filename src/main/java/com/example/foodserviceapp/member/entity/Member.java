@@ -33,7 +33,7 @@ public class Member extends Audit {
     @Enumerated(value = EnumType.STRING)
     private MemberStatus status = MemberStatus.ACTIVE_MEMBER;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinColumn(name = "point_id")
     private Point point;
 
