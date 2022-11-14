@@ -24,7 +24,7 @@ public class Order extends Audit {
     @Enumerated(value = EnumType.STRING)
     private Order.Status orderStatus;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -47,8 +47,8 @@ public class Order extends Audit {
         ORDER_COMPLETE(3, "주문 처리 완료"),
         ORDER_CANCEL(4, "주문 취소");
 
-        private int status;
-        private String message;
+        private final int status;
+        private final String message;
 
 
         Status(int status, String message) {

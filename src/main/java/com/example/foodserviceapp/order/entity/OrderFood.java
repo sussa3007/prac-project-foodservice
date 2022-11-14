@@ -2,7 +2,6 @@ package com.example.foodserviceapp.order.entity;
 
 import com.example.foodserviceapp.audit.Audit;
 import com.example.foodserviceapp.food.entity.Food;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -21,11 +20,11 @@ public class OrderFood extends Audit {
 
     private int quantity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_id")
     private Food food;
 
