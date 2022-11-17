@@ -31,12 +31,20 @@ public class FoodService {
         return checkFoodField(food);
     }
 
+    @Transactional(readOnly = true)
     public Food findFood(Long foodId) {
         return findVerifiedFoodById(foodId);
     }
 
+    @Transactional(readOnly = true)
     public Page<Food> findFoods(int page, int size) {
         return foodRepository.findAllByOrderByFoodIdDesc(PageRequest.of(page, size));
+    }
+
+    /* Food의 Description 검색 기능 구현*/
+    @Transactional(readOnly = true)
+    public Page<Food> findFoodsByDescription(String description,int page, int size) {
+        return foodRepository.findByDescriptionLike(description,PageRequest.of(page, size));
     }
 
     public void deleteFood(Long foodId) {
