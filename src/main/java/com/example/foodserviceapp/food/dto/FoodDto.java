@@ -122,5 +122,37 @@ public class FoodDto {
 
 
     }
+    @Data
+    @AllArgsConstructor
+    public static class ResponseForOrder {
+
+        private Long foodId;
+
+        private String name;
+
+        private int price;
+
+        private String description;
+
+        private String foodCode;
+
+        public static ResponseForOrder foodToResponseForOrderDto(Food food) {
+            return new ResponseForOrder(
+                    food.getFoodId(),
+                    food.getName(),
+                    food.getPrice(),
+                    food.getDescription(),
+                    food.getFoodCode()
+            );
+        }
+
+        public static List<ResponseForOrder> foodListToResponseDtos(List<Food> foods) {
+            return foods.stream()
+                    .map(ResponseForOrder::foodToResponseForOrderDto)
+                    .collect(Collectors.toList());
+        }
+
+
+    }
 
 }
