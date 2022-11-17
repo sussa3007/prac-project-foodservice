@@ -15,6 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Data
@@ -30,14 +31,28 @@ public class OrderDto {
         @NotNull(message = "주문 음식 정보는 필수입니다.")
         private List<OrderFoodDto> orderFood;
 
-        @Valid
-        @NotNull(message = "최소 하나의 옵션이 필요합니다.")
-        private List<OptionDto> options;
-
-        public Order postDtoToOrder() {
-            List<Long> verify = orderFood.stream().map(OrderFoodDto::getFoodId).collect(Collectors.toList());
+        /* 주문한 음식과 옵션의 음식이 동일한지 검증 */
+        private void validateFoodId(OrderFoodDto orderFoodDto) {
+            Long foodId = orderFoodDto.getFoodId();
+            int size = orderFoodDto.getOptions().size();
+            List<OptionDto> validateList = orderFoodDto.getOptions()
+                    .stream()
+                    .filter(optionDto -> Objects.equals(optionDto.getFoodId(), foodId))
+                    .collect(Collectors.toList());
+            if(size != validateList.size())
+                throw new ServiceLogicException(ErrorCode.WRONG_FOOD_IN_OPTION);
+        }
+        /* 하나의 주문에 동일한 음식이 주문되었는지 검증 */
+        private void validateDuplicateFood(List<OrderFoodDto> orderFoods) {
+            orderFoods.forEach(this::validateFoodId);
+            List<Long> verify = orderFoods.stream().map(OrderFoodDto::getFoodId).collect(Collectors.toList());
             if(verify.size() != verify.stream().distinct().count())
                 throw new ServiceLogicException(ErrorCode.ORDER_DUPLICATE);
+        }
+
+        public Order postDtoToOrder() {
+            validateDuplicateFood(orderFood);
+
             Member member = Member.builder()
                     .memberId(this.memberId)
                     .build();
@@ -49,12 +64,10 @@ public class OrderDto {
                                             dto.getQuantity(),
                                             Food.builder()
                                                     .foodId(dto.getFoodId())
-                                                    .build()
+                                                    .build(),
+                                            dto.getOptions().stream()
+                                                    .map(Option::of).collect(Collectors.toList())
                                     )).collect(Collectors.toList())
-                    )
-                    .options(
-                            options.stream()
-                                    .map(Option::of).collect(Collectors.toList())
                     )
                     .orderStatus(Order.Status.ORDER_REQUEST)
                     .build();
@@ -80,20 +93,18 @@ public class OrderDto {
     public static class Response {
         private Long orderId;
         private String orderStatus;
+        private int totalCount;
         private MemberDto.Response member;
         private List<OrderFoodDto.Response> orderFoods;
-        private List<OptionDto.Response> options;
 
         public static Response orderToResponseDto(Order order) {
             return new Response(
                     order.getOrderId(),
                     order.getOrderStatus().getMessage(),
+                    order.getTotalCount(),
                     MemberDto.Response.memberToResponseDto(order.getMember()),
                     order.getOrderFoods().stream()
                             .map(OrderFoodDto.Response::orderFoodToResponseDto)
-                            .collect(Collectors.toList()),
-                    order.getOptions().stream()
-                            .map(OptionDto.Response::optionToResponse)
                             .collect(Collectors.toList())
             );
         }
