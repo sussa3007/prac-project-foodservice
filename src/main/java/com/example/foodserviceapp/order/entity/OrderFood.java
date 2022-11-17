@@ -5,6 +5,8 @@ import com.example.foodserviceapp.food.entity.Food;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,13 +30,22 @@ public class OrderFood extends Audit {
     @JoinColumn(name = "food_id")
     private Food food;
 
+    @OneToMany(mappedBy = "orderfood",cascade = CascadeType.ALL)
+    private List<Option> options = new ArrayList<>();
+
+    public List<Option> updateOptions(List<Option> options) {
+        options.forEach(option -> option.setOrderfood(this));
+        return options;
+    }
     public static OrderFood of(
             int quantity,
-            Food food
+            Food food,
+            List<Option> options
     ) {
         return OrderFood.builder()
                 .quantity(quantity)
                 .food(food)
+                .options(options)
                 .build();
     }
     public static OrderFood of(

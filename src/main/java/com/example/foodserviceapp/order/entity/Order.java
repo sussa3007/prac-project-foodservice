@@ -3,6 +3,7 @@ package com.example.foodserviceapp.order.entity;
 import com.example.foodserviceapp.audit.Audit;
 import com.example.foodserviceapp.member.entity.Member;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -24,20 +25,27 @@ public class Order extends Audit {
     @Enumerated(value = EnumType.STRING)
     private Order.Status orderStatus;
 
+    @Column(nullable = false)
+    private int totalCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
+
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
     private List<OrderFood> orderFoods = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
-    private List<Option> options = new ArrayList<>();
+
 
 
     public void addOrderfoods(OrderFood orderFood) {
         orderFoods.add(orderFood);
         orderFood.setOrder(this);
+    }
+
+    public void setTotalCount(int price) {
+        this.totalCount += price;
     }
 
     @Getter

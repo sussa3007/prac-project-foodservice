@@ -28,8 +28,8 @@ public class OptionDto {
 
         public static Response optionToResponse(Option op) {
             return new Response(
-                    op.getFood().getFoodId(),
-                    op.getOptions().getMessage(),
+                    op.getFoodId(),
+                    op.getStatus().getMessage(),
                     op.getOptionCount()
             );
 
