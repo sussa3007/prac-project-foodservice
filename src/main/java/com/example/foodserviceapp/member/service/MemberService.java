@@ -26,13 +26,17 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
+
     public Member updateMember(Member member) {
         return checkMemberField(member);
     }
+
+    @Transactional(readOnly = true)
     public Member findMember(Long memberId) {
         return verifiedMemberById(memberId);
     }
 
+    @Transactional(readOnly = true)
     public Page<Member> findMembers(int page, int size) {
         return memberRepository.findAllByOrderByMemberIdDesc(PageRequest.of(page, size));
     }
