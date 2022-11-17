@@ -25,27 +25,26 @@ public class Option {
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private Options options =Options.NONE_OPTIONS;
+    private Options status =Options.NONE_OPTIONS;
 
     @Column(nullable = false)
     private int optionCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+    @JoinColumn(name = "order_food_id")
+    private OrderFood orderfood;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "food_id")
-    private Food food;
+    private Long foodId;
+
 
     public static Option of(OptionDto optionDto) {
         Option option = new Option();
         Options findOptions = Arrays.stream(Options.values())
                 .filter(options -> options.optionNumber == optionDto.getOptionNumber())
                 .findAny().orElseThrow(() ->new ServiceLogicException(ErrorCode.OPTION_NOT_FOUND));
-        option.setOptions(findOptions);
+        option.setStatus(findOptions);
         option.setOptionCount(optionDto.getOptionCount());
-        option.setFood(Food.builder().foodId(optionDto.getFoodId()).build());
+        option.setFoodId(optionDto.getFoodId());
         return option;
     }
 
