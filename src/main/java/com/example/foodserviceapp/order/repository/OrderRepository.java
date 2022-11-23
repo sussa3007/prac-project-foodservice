@@ -5,16 +5,14 @@ import com.example.foodserviceapp.order.entity.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
 public interface OrderRepository extends
-        JpaRepository<Order,Long>
-{
-
-
+        JpaRepository<Order,Long> {
     /* 지정 Member의 Order List 조회 */
     Page<Order> findByMemberOrderByOrderIdDesc(Member member, Pageable pageable);
 
@@ -26,15 +24,18 @@ public interface OrderRepository extends
      * @return
      */
     @Query("select o from ORDERS o " +
-//            "join fetch o.options op " +
             "join fetch o.member m  " +
             "join fetch m.point pt " +
             "join fetch o.orderFoods od " +
+//            "join fetch od.options op " +
             "join fetch od.food f " +
             "order by o.orderId desc")
     List<Order> findAllQuery();
 
 
+    /* Entity Graph 적용시 OOM 경고 출력
+    *  join fetch o.orderFoods od 추가해도 동일 현상 */
+//    @EntityGraph(attributePaths = "orderFoods")
     @Query(value = "select o from ORDERS o " +
             "join fetch o.member m " +
             "join fetch m.point p",

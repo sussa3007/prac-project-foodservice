@@ -2,17 +2,13 @@ package com.example.foodserviceapp.order.entity;
 
 import com.example.foodserviceapp.exception.ErrorCode;
 import com.example.foodserviceapp.exception.ServiceLogicException;
-import com.example.foodserviceapp.food.entity.Food;
 import com.example.foodserviceapp.order.dto.OptionDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -34,6 +30,7 @@ public class Option {
     @JoinColumn(name = "order_food_id")
     private OrderFood orderfood;
 
+    @Column(nullable = false)
     private Long foodId;
 
 

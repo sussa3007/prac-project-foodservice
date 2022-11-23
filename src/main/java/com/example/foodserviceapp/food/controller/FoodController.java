@@ -5,8 +5,6 @@ import com.example.foodserviceapp.dto.ResponseDto;
 import com.example.foodserviceapp.food.dto.FoodDto;
 import com.example.foodserviceapp.food.entity.Food;
 import com.example.foodserviceapp.food.service.FoodService;
-import com.example.foodserviceapp.member.entity.Member;
-import com.example.foodserviceapp.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
