@@ -95,6 +95,7 @@ public class OrderService {
         order.setOrderStatus(4);
         return order;
     }
+
     /* 부가 기능, 검증 로직 */
 
     private void verifyOrderStep(Order findOrder,String email) {

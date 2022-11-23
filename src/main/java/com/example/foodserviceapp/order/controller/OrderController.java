@@ -71,21 +71,10 @@ public class OrderController {
             @RequestParam @Positive int page,
             @RequestParam @Positive int size
     ) {
-<<<<<<< Updated upstream
-        Page<Order> orderPage =  orderService.findOrders(page-1,size);
-<<<<<<< Updated upstream
-        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
-        return new ResponseEntity<>(PageResponseDto.of(responseList,orderPage), HttpStatus.OK);
-=======
-        List<Order> orderList = orderPage.getContent();
-        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderList);
-=======
         Page<Order> orderPage = orderService.findOrders(page - 1, size);
         List<OrderDto.Response> responseList =
                 OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
->>>>>>> Stashed changes
         return new ResponseEntity<>(PageResponseDto.of(responseList, orderPage), HttpStatus.OK);
->>>>>>> Stashed changes
     }
 
     /* 지정 Member의 Order List 조회 */
@@ -95,21 +84,11 @@ public class OrderController {
             @RequestParam @Positive int page,
             @RequestParam @Positive int size
     ) {
-<<<<<<< Updated upstream
-        Page<Order> orderPage =  orderService.findOrdersByMemberId(memberId,page-1,size);
-<<<<<<< Updated upstream
-        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
-        return new ResponseEntity<>(PageResponseDto.of(responseList,orderPage), HttpStatus.OK);
-=======
-        List<Order> orderList = orderPage.getContent();
-        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderList);
-=======
+
         Page<Order> orderPage = orderService.findOrdersByMemberId(memberId, page - 1, size);
         List<OrderDto.Response> responseList =
                 OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
->>>>>>> Stashed changes
         return new ResponseEntity<>(PageResponseDto.of(responseList, orderPage), HttpStatus.OK);
->>>>>>> Stashed changes
     }
 
     @DeleteMapping("/{order-id}")

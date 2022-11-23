@@ -35,8 +35,11 @@ public class JwtAdvice {
     public Object verifyOrderByRequestMember(ProceedingJoinPoint joinPoint) throws Throwable {
         String requestMemberEmail = "";
         String findMemberEmail = "";
+
         log.info("# My JWT Advice Apply");
+
         Object proceed = joinPoint.proceed();
+
         requestMemberEmail = Arrays.stream(joinPoint.getArgs())
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
