@@ -13,6 +13,7 @@ public interface FoodRepository extends JpaRepository<Food,Long> {
     Optional<Food> findByFoodCode(String foodCode);
 
     Page<Food> findAllByOrderByFoodIdDesc(Pageable page);
+
     /* Food의 Description 검색 기능 구현*/
     @Query(value = "SELECT f FROM Food f WHERE f.description LIKE %:description%",
             countQuery = "SELECT COUNT(f) FROM Food f WHERE f.description LIKE %:description%")

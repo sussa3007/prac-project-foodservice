@@ -1,12 +1,15 @@
 package com.example.foodserviceapp.order.entity;
 
 import com.example.foodserviceapp.audit.Audit;
+import com.example.foodserviceapp.exception.ErrorCode;
+import com.example.foodserviceapp.exception.ServiceLogicException;
 import com.example.foodserviceapp.member.entity.Member;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity(name = "ORDERS")
@@ -33,18 +36,34 @@ public class Order extends Audit {
     private Member member;
 
 
-    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderFood> orderFoods = new ArrayList<>();
 
 
+    public int getOrderStatus() {
+        return this.orderStatus.getStatus();
+    }
 
+    public String getOrderStatusMessage() {
+        return this.orderStatus.getMessage();
+    }
+
+    public void setOrderStatus(int orderStatus) {
+        this.orderStatus = Arrays.stream(Status.values()).filter(status -> status.getStatus() == orderStatus)
+                .findFirst().orElseThrow(() -> new ServiceLogicException(ErrorCode.BAD_REQUEST));
+    }
+
+    public static Order.Status findOrderStatus(int orderStatus) {
+        return Arrays.stream(Status.values()).filter(status -> status.getStatus() == orderStatus)
+                .findFirst().orElseThrow(() -> new ServiceLogicException(ErrorCode.BAD_REQUEST));
+    }
 
     public void addOrderfoods(OrderFood orderFood) {
         orderFoods.add(orderFood);
         orderFood.setOrder(this);
     }
 
-    public void setTotalCount(int price) {
+    public void addTotalCount(int price) {
         this.totalCount += price;
     }
 
