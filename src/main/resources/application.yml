@@ -12,7 +12,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_batch_fetch_size: 1000
+        default_batch_fetch_size: 100
 
 logging.level:
   org.hibernate.SQL: debug
+#server:
+#  ssl:
+#    key-store: classpath:localhost.p12
+#    key-store-type: PKCS12
+#    key-store-password: changeit
