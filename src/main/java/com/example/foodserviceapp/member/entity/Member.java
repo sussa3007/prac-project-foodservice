@@ -23,8 +23,15 @@ public class Member extends Audit {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false,unique = true)
     private String email;
+
+    @Column(length = 100, nullable = false)
+    private String password;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> roles = new ArrayList<>();
+
 
     @Column(nullable = false)
     private String phone;

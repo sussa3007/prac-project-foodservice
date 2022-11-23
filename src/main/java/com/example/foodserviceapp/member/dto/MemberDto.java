@@ -25,6 +25,9 @@ public class MemberDto {
         private String email;
 
         @NotBlank
+        private String password;
+
+        @NotBlank
         @Pattern(regexp = "\\d{3}-\\d{4}-\\d{4}",message = "휴대폰 번호를 올바르게 입력해 주세요")
         private String phone;
 
@@ -32,6 +35,7 @@ public class MemberDto {
             return Member.builder()
                     .name(this.name)
                     .email(this.email)
+                    .password(this.password)
                     .phone(this.phone)
                     .point(new Point())
                     .status(Member.MemberStatus.ACTIVE_MEMBER)
@@ -50,6 +54,8 @@ public class MemberDto {
         @Email
         private String email;
 
+        private String password;
+
         @Pattern(regexp = "\\d{3}-\\d{4}-\\d{4}",message = "휴대폰 번호를 올바르게 입력해 주세요")
         private String phone;
 
@@ -58,6 +64,7 @@ public class MemberDto {
                     .memberId(this.memberId)
                     .name(this.name)
                     .email(this.email)
+                    .password(this.password)
                     .phone(this.phone)
                     .build();
         }
