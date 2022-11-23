@@ -1,6 +1,8 @@
 package com.example.foodserviceapp.order.service;
 
 
+import com.example.foodserviceapp.advice.JwtPoint;
+import com.example.foodserviceapp.auth.JwtTokenizer;
 import com.example.foodserviceapp.exception.ErrorCode;
 import com.example.foodserviceapp.exception.ServiceLogicException;
 import com.example.foodserviceapp.food.service.FoodService;
@@ -8,7 +10,7 @@ import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.member.service.MemberService;
 import com.example.foodserviceapp.order.entity.Order;
 import com.example.foodserviceapp.order.repository.OrderRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,35 +21,55 @@ import java.util.Optional;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class OrderService {
 
+
+    private final String adminEmail;
     private final OrderRepository orderRepository;
     private final MemberService memberService;
     private final FoodService foodService;
 
-    public Order createOrder(Order order) {
+    private final JwtTokenizer jwtTokenizer;
+
+    public OrderService(
+            @Value("${mail.address.admin}") String adminEmail,
+            OrderRepository orderRepository,
+            MemberService memberService,
+            FoodService foodService,
+            JwtTokenizer jwtTokenizer
+    ) {
+        this.adminEmail = adminEmail;
+        this.orderRepository = orderRepository;
+        this.memberService = memberService;
+        this.foodService = foodService;
+        this.jwtTokenizer = jwtTokenizer;
+    }
+
+    @JwtPoint
+    public Order createOrder(Order order, String email) {
         verifyOrder(order);
         updateOption(order);
+        updateTotalCount(order);
         Order saveOrder = orderRepository.save(order);
         updatePoint(saveOrder);
         order.getMember().addOrder(saveOrder);
         return saveOrder;
     }
 
-    public Order updateOrder(Order order) {
+
+    @JwtPoint
+    public Order updateOrder(Order order,String email) {
         Order findOrder = verifiedOrderById(order.getOrderId());
 
-        verifyOrderStep(findOrder);
+        verifyOrderStep(findOrder,email);
 
-        Optional.ofNullable(order.getOrderStatus())
-                .ifPresent(findOrder::setOrderStatus);
+        findOrder.setOrderStatus(order.getOrderStatus());
         return findOrder;
     }
 
-
     @Transactional(readOnly = true)
-    public Order findOrder(Long orderId) {
+    @JwtPoint
+    public Order findOrder(Long orderId, String email) {
         return verifiedOrderById(orderId);
     }
 
@@ -66,16 +88,20 @@ public class OrderService {
         return findOrders;
     }
 
-    public void cancelOrder(Long orderId) {
+    @JwtPoint
+    public Order cancelOrder(Long orderId, String email) {
         Order order = verifiedOrderById(orderId);
-        verifyOrderStep(order);
-        order.setOrderStatus(Order.Status.ORDER_CANCEL);
+        verifyOrderStep(order,email);
+        order.setOrderStatus(4);
+        return order;
     }
     /* 부가 기능, 검증 로직 */
 
-    private static void verifyOrderStep(Order findOrder) {
-        int status = findOrder.getOrderStatus().getStatus();
-        if(status >= 2) throw new ServiceLogicException(ErrorCode.ALREADY_CONFIRM_ORDER);
+    private void verifyOrderStep(Order findOrder,String email) {
+        if (!email.equals(adminEmail)) {
+            int status = findOrder.getOrderStatus();
+            if(status >= 2) throw new ServiceLogicException(ErrorCode.ALREADY_CONFIRM_ORDER);
+        }
     }
     private Order verifiedOrderById(Long orderId) {
         Optional<Order> findOrder = orderRepository.findById(orderId);
@@ -112,5 +138,10 @@ public class OrderService {
                 });
     }
 
-
+    private void updateTotalCount(Order order) {
+        order.getOrderFoods()
+                .forEach(
+                        orderFood -> order.addTotalCount(orderFood.getPrice())
+                );
+    }
 }

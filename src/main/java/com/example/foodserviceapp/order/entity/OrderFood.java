@@ -37,6 +37,10 @@ public class OrderFood extends Audit {
         options.forEach(option -> option.setOrderfood(this));
         return options;
     }
+
+    public int getPrice() {
+        return (this.food.getPrice() * quantity);
+    }
     public static OrderFood of(
             int quantity,
             Food food,

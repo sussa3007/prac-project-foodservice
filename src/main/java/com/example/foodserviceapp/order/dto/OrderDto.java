@@ -80,10 +80,15 @@ public class OrderDto {
     public static class Patch {
         private Long orderId;
         @NotNull
-        private Order.Status orderStatus;
+        private int orderStatus;
 
         public Order patchDtoToOrder() {
-            return Order.builder().orderId(orderId).orderStatus(orderStatus).build();
+            Order.Status findStatus = Order.findOrderStatus(orderStatus);
+
+            return Order.builder()
+                    .orderId(orderId)
+                    .orderStatus(findStatus)
+                    .build();
         }
     }
 
@@ -100,7 +105,7 @@ public class OrderDto {
         public static Response orderToResponseDto(Order order) {
             return new Response(
                     order.getOrderId(),
-                    order.getOrderStatus().getMessage(),
+                    order.getOrderStatusMessage(),
                     order.getTotalCount(),
                     MemberDto.Response.memberToResponseDto(order.getMember()),
                     order.getOrderFoods().stream()
@@ -110,7 +115,7 @@ public class OrderDto {
         }
         public static List<Response> orderListToResponseDtos(List<Order> orderList) {
             return orderList.stream()
-                    .filter(order -> (order.getOrderStatus().getStatus()==1))
+                    .filter(order -> (order.getOrderStatus()==1))
                     .map(OrderDto.Response::orderToResponseDto)
                     .collect(Collectors.toList());
         }
