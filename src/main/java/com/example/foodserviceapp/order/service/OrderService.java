@@ -11,6 +11,7 @@ import com.example.foodserviceapp.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,13 +45,20 @@ public class OrderService {
         return findOrder;
     }
 
+
+    @Transactional(readOnly = true)
     public Order findOrder(Long orderId) {
         return verifiedOrderById(orderId);
     }
 
+
+    @Transactional(readOnly = true)
     public Page<Order> findOrders(int page, int size) {
-        return orderRepository.findAllByOrderByOrderIdDesc(PageRequest.of(page, size));
+        return orderRepository.findAllByOrder(
+                PageRequest.of(page, size, Sort.by("orderId").descending()));
     }
+
+    @Transactional(readOnly = true)
     public Page<Order> findOrdersByMemberId(Long memberId, int page, int size) {
         Member member = memberService.findMember(memberId);
         Page<Order> findOrders =
@@ -77,10 +85,9 @@ public class OrderService {
     }
 
     private void updateOption(Order order) {
-        order.getOptions()
-                .forEach(option -> {
-                    option.setOrder(order);
-                    option.setFood(foodService.findFood(option.getFood().getFoodId()));
+        order.getOrderFoods()
+                .forEach(orderFood -> {
+                    orderFood.updateOptions(orderFood.getOptions());
                 });
     }
 

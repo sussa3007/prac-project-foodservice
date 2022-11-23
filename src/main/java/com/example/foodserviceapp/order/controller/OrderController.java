@@ -61,10 +61,11 @@ public class OrderController {
             @RequestParam @Positive int size
     ) {
         Page<Order> orderPage =  orderService.findOrders(page-1,size);
-        List<Order> orderList = orderPage.getContent();
-        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderList);
-        return new ResponseEntity<>(PageResponseDto.of(responseList, orderPage), HttpStatus.OK);
+        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
+        return new ResponseEntity<>(PageResponseDto.of(responseList,orderPage), HttpStatus.OK);
     }
+
+    /* 지정 Member의 Order List 조회 */
     @GetMapping("/{member-id}/orders")
     public ResponseEntity getOrdersByMember(
             @PathVariable("member-id") @Positive Long memberId,
@@ -72,9 +73,8 @@ public class OrderController {
             @RequestParam @Positive int size
     ) {
         Page<Order> orderPage =  orderService.findOrdersByMemberId(memberId,page-1,size);
-        List<Order> orderList = orderPage.getContent();
-        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderList);
-        return new ResponseEntity<>(PageResponseDto.of(responseList, orderPage), HttpStatus.OK);
+        List<OrderDto.Response> responseList = OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
+        return new ResponseEntity<>(PageResponseDto.of(responseList,orderPage), HttpStatus.OK);
     }
 
     @DeleteMapping("/{order-id}")

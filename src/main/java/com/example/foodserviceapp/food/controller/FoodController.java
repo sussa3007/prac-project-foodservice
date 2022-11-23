@@ -77,6 +77,22 @@ public class FoodController {
         );
     }
 
+    /* Food의 Description 검색 기능 구현*/
+    @GetMapping("/detail")
+    public ResponseEntity getFoodsDescription(
+            @RequestParam String description,
+            @RequestParam @Positive int page,
+            @RequestParam @Positive int size
+    ) {
+        Page<Food> foodPage = foodService.findFoodsByDescription(description,page-1, size);
+        List<FoodDto.Response> responseList =
+                FoodDto.Response.foodListToResponseDtos(foodPage.getContent());
+        return new ResponseEntity<>(
+                PageResponseDto.of(responseList,foodPage),
+                HttpStatus.OK
+        );
+    }
+
     @DeleteMapping("/{food-id}")
     public ResponseEntity deleteFood(
             @PathVariable @Positive Long foodId
