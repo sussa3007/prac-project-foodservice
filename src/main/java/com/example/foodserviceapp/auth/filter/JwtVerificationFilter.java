@@ -3,6 +3,8 @@ package com.example.foodserviceapp.auth.filter;
 import com.example.foodserviceapp.auth.JwtTokenizer;
 import com.example.foodserviceapp.auth.utils.JwtAuthorityUtils;
 import com.example.foodserviceapp.member.entity.Member;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,8 +36,12 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         try {
             Map<String, Object> claims = verifyJws(request);
             setAuthenticationToContext(claims);
+        } catch (SignatureException se) {
+            request.setAttribute("exception", se);
+        } catch (ExpiredJwtException ee) {
+            request.setAttribute("exception", ee);
         } catch (Exception e) {
-            request.setAttribute("exception",e);
+            request.setAttribute("exception", e);
         }
 
         filterChain.doFilter(request, response);
