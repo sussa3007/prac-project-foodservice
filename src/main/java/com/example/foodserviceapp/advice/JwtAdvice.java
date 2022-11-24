@@ -3,21 +3,19 @@ package com.example.foodserviceapp.advice;
 
 import com.example.foodserviceapp.exception.ErrorCode;
 import com.example.foodserviceapp.exception.ServiceLogicException;
+import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.order.entity.Order;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.Arrays;
+import java.util.List;
 
 @Aspect
 @Component
@@ -32,25 +30,52 @@ public class JwtAdvice {
 
     @Around("@annotation(JwtPoint)")
     @Transactional
-    public Object verifyOrderByRequestMember(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Object verifyByRequestMember(ProceedingJoinPoint joinPoint) throws Throwable {
         String requestMemberEmail = "";
-        String findMemberEmail = "";
 
         log.info("# My JWT Advice Apply");
-
-        Object proceed = joinPoint.proceed();
-
         requestMemberEmail = Arrays.stream(joinPoint.getArgs())
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
-                .findFirst().orElseThrow(() -> new ServiceLogicException(ErrorCode.INTERNAL_SERVER_ERROR));
-        if (proceed instanceof Order) {
-            findMemberEmail = ((Order) proceed).getMember().getEmail();
-            verifyByUserNameAndEmail(requestMemberEmail, findMemberEmail);
-        }
+                .findFirst().orElseThrow(() -> new ServiceLogicException(ErrorCode.BAD_REQUEST));
+
+        Object proceed = joinPoint.proceed();
+        verifyByUserNameAndEmail(requestMemberEmail, proceed);
+
+
         return proceed;
     }
-    public void verifyByUserNameAndEmail(String requestMemberEmail, String findMemberEmail) {
+
+    /* TODO 현재 사용되고 있는곳 없음 추후 삭제 할수도 있음*/
+    @Around("@annotation(JwtPagePoint)")
+    @Transactional
+    public Object verifyByRequestMemberForPage(ProceedingJoinPoint joinPoint) throws Throwable {
+        String requestMemberEmail = "";
+        log.info("# My JWT Advice Apply For Page");
+        requestMemberEmail = Arrays.stream(joinPoint.getArgs())
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .findFirst().orElseThrow(() -> new ServiceLogicException(ErrorCode.BAD_REQUEST));
+
+        Object proceed = joinPoint.proceed();
+
+        List content = ((Page) proceed).getContent();
+        for (Object obj : content) {
+            verifyByUserNameAndEmail(requestMemberEmail,obj);
+        }
+
+        return proceed;
+
+    }
+
+    public void verifyByUserNameAndEmail(String requestMemberEmail, Object obj) {
+        String findMemberEmail = "";
+        if (obj instanceof Order) {
+            findMemberEmail = ((Order) obj).getMember().getEmail();
+        } else if (obj instanceof Member) {
+            findMemberEmail =((Member) obj).getEmail();
+        }
+
         if(!requestMemberEmail.equals(findMemberEmail) && !requestMemberEmail.equals(adminMailAddress))
             throw new ServiceLogicException(ErrorCode.UNAUTHORIZED_ACCESS);
     }
