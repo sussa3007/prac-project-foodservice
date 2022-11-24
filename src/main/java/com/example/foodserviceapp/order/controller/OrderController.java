@@ -1,9 +1,7 @@
 package com.example.foodserviceapp.order.controller;
 
-import com.example.foodserviceapp.auth.details.MemberDetailsService;
 import com.example.foodserviceapp.dto.PageResponseDto;
 import com.example.foodserviceapp.dto.ResponseDto;
-import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.order.dto.OrderDto;
 import com.example.foodserviceapp.order.entity.Order;
 import com.example.foodserviceapp.order.service.OrderService;
@@ -11,21 +9,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/orders")
 @Validated
+@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
@@ -69,9 +64,11 @@ public class OrderController {
     @GetMapping
     public ResponseEntity getOrders(
             @RequestParam @Positive int page,
-            @RequestParam @Positive int size
+            @RequestParam @Positive int size,
+            Principal principal
     ) {
-        Page<Order> orderPage = orderService.findOrders(page - 1, size);
+        String email = principal.getName();
+        Page<Order> orderPage = orderService.findOrders(email,page - 1, size);
         List<OrderDto.Response> responseList =
                 OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
         return new ResponseEntity<>(PageResponseDto.of(responseList, orderPage), HttpStatus.OK);
@@ -82,10 +79,12 @@ public class OrderController {
     public ResponseEntity getOrdersByMember(
             @PathVariable("member-id") @Positive Long memberId,
             @RequestParam @Positive int page,
-            @RequestParam @Positive int size
+            @RequestParam @Positive int size,
+            Principal principal
     ) {
+        String email = principal.getName();
 
-        Page<Order> orderPage = orderService.findOrdersByMemberId(memberId, page - 1, size);
+        Page<Order> orderPage = orderService.findOrdersByMemberId(email,memberId, page - 1, size);
         List<OrderDto.Response> responseList =
                 OrderDto.Response.orderListToResponseDtos(orderPage.getContent());
         return new ResponseEntity<>(PageResponseDto.of(responseList, orderPage), HttpStatus.OK);

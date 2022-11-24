@@ -1,31 +1,44 @@
 package com.example.foodserviceapp.member.service;
 
+import com.example.foodserviceapp.advice.JwtPoint;
 import com.example.foodserviceapp.auth.utils.JwtAuthorityUtils;
 import com.example.foodserviceapp.exception.ErrorCode;
 import com.example.foodserviceapp.exception.ServiceLogicException;
 import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.member.repository.MemberRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class MemberService {
+
+    private final String adminEmail;
 
     private final MemberRepository memberRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     private final JwtAuthorityUtils authorityUtils;
+
+    public MemberService(
+            @Value("${mail.address.admin}") String adminEmail,
+            MemberRepository memberRepository,
+            PasswordEncoder passwordEncoder,
+            JwtAuthorityUtils authorityUtils
+    ) {
+        this.adminEmail = adminEmail;
+        this.memberRepository = memberRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authorityUtils = authorityUtils;
+    }
 
     public Member createMember(Member member) {
         String email = member.getEmail();
@@ -41,23 +54,30 @@ public class MemberService {
     }
 
 
-    public Member updateMember(Member member) {
+    @JwtPoint
+    public Member updateMember(Member member, String email) {
         return checkMemberField(member);
     }
 
     @Transactional(readOnly = true)
-    public Member findMember(Long memberId) {
+    @JwtPoint
+    public Member findMember(Long memberId,String email) {
         return verifiedMemberById(memberId);
     }
 
     @Transactional(readOnly = true)
-    public Page<Member> findMembers(int page, int size) {
-        return memberRepository.findAllByOrderByMemberIdDesc(PageRequest.of(page, size));
+    public Page<Member> findMembers(String email,int page, int size) {
+        if (email.equals(adminEmail)) {
+            return memberRepository.findAllByOrderByMemberIdDesc(PageRequest.of(page, size));
+        }
+        throw new ServiceLogicException(ErrorCode.UNAUTHORIZED_ACCESS);
     }
 
-    public void deleteMember(Long memberId) {
+    @JwtPoint
+    public Member deleteMember(Long memberId, String email) {
         Member findMember = verifiedMemberById(memberId);
         findMember.setStatus(Member.MemberStatus.WITHDRAWAL_MEMBER);
+        return findMember;
     }
 
 

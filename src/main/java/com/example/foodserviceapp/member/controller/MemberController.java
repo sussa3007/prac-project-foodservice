@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -37,20 +38,24 @@ public class MemberController {
     @PatchMapping("/{member-id}")
     public ResponseEntity patchMember(
             @PathVariable("member-id") @Positive Long memberId,
-            @RequestBody @Valid MemberDto.Patch request
+            @RequestBody @Valid MemberDto.Patch request,
+            Principal principal
     ) {
+        String email = principal.getName();
         request.setMemberId(memberId);
         Member member = request.patchDtoToMember();
-        Member updateMember = memberService.updateMember(member);
+        Member updateMember = memberService.updateMember(member,email);
         MemberDto.Response response = MemberDto.Response.memberToResponseDto(updateMember);
         return new ResponseEntity<>(ResponseDto.of(response), HttpStatus.OK);
     }
 
     @GetMapping("/{member-id}")
     public ResponseEntity getMember(
-            @PathVariable("member-id") @Positive Long memberId
+            @PathVariable("member-id") @Positive Long memberId,
+            Principal principal
     ) {
-        Member findMember = memberService.findMember(memberId);
+        String email = principal.getName();
+        Member findMember = memberService.findMember(memberId,email);
         MemberDto.Response response = MemberDto.Response.memberToResponseDto(findMember);
         return new ResponseEntity<>(ResponseDto.of(response), HttpStatus.OK);
     }
@@ -58,9 +63,11 @@ public class MemberController {
     @GetMapping
     public ResponseEntity getMembers(
             @RequestParam @Positive int page,
-            @RequestParam @Positive int size
+            @RequestParam @Positive int size,
+            Principal principal
     ) {
-        Page<Member> memberPage = memberService.findMembers(page-1,size);
+        String email = principal.getName();
+        Page<Member> memberPage = memberService.findMembers(email,page-1,size);
         List<MemberDto.Response> responseList =
                 MemberDto.Response.memberListToResponseDtos(memberPage.getContent());
         return new ResponseEntity<>(PageResponseDto.of(responseList, memberPage), HttpStatus.OK);
@@ -68,9 +75,11 @@ public class MemberController {
 
     @DeleteMapping("/{member-id}")
     public ResponseEntity deleteMember(
-            @PathVariable("member-id") @Positive Long memberId
+            @PathVariable("member-id") @Positive Long memberId,
+            Principal principal
     ) {
-        memberService.deleteMember(memberId);
+        String email = principal.getName();
+        memberService.deleteMember(memberId,email);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
