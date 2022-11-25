@@ -2,6 +2,7 @@ package com.example.foodserviceapp.auth.filter;
 
 
 import com.example.foodserviceapp.auth.JwtTokenizer;
+import com.example.foodserviceapp.auth.utils.Token;
 import com.example.foodserviceapp.dto.LoginDto;
 import com.example.foodserviceapp.member.entity.Member;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,8 +49,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             Authentication authResult
     ) throws IOException, ServletException {
         Member member = (Member) authResult.getPrincipal();
-        String accessToken = jwtTokenizer.delegateAccessToken(member);
-        String refreshToken = jwtTokenizer.delegateRefreshToken(member);
+        Token token = jwtTokenizer.delegateToken(member);
+        String accessToken = token.getAccessToken();
+        String refreshToken = token.getRefreshToken();
 
         response.setHeader("Authorization", "Bearer " + accessToken);
         response.setHeader("Refresh", refreshToken);

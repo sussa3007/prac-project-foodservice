@@ -46,7 +46,6 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-
     @Override
     protected boolean shouldNotFilter(
             HttpServletRequest request
