@@ -1,7 +1,7 @@
 package com.example.foodserviceapp.auth.controller;
 
 import com.example.foodserviceapp.auth.JwtTokenizer;
-import com.example.foodserviceapp.dto.LoginSuccessResponseDto;
+import com.example.foodserviceapp.dto.AuthSuccessResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +27,10 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
+
         jwtTokenizer.verifyRefreshToken(request.getHeader("Refresh"),response);
 
-
-        return new ResponseEntity<>(LoginSuccessResponseDto.of(response), HttpStatus.OK);
+        return new ResponseEntity<>(AuthSuccessResponseDto.of(response), HttpStatus.OK);
     }
 
 }
