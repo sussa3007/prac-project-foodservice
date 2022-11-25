@@ -64,6 +64,8 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         return jwtTokenizer.getClaims(jws, base64SecretKey).getBody();
     }
 
+
+
     private void setAuthenticationToContext(Map<String ,Object> claims) {
         String username = (String) claims.get("username");
         List<GrantedAuthority> roles = authorityUtils.createAuthorities((List<String>) claims.get("roles"));

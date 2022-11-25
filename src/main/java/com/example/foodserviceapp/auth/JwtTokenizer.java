@@ -1,6 +1,7 @@
 package com.example.foodserviceapp.auth;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -10,6 +11,7 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Calendar;
@@ -20,15 +22,15 @@ import java.util.Map;
 public class JwtTokenizer {
 
     @Getter
-    @Value("${jwt.key.secret}")
+    @Value("${JWT_SECRET_KEY}")
     private String secretKey;
 
     @Getter
-    @Value("${jwt.access-token-expiration-minutes}")
+    @Value("${ACCESS_TOKEN_EXPIRATION_MINUTES}")
     private int accessTokenExpirationMinutes;
 
     @Getter
-    @Value("${jwt.refresh-token-expiration-minutes}")
+    @Value("${REFRESH_TOKEN_EXPIRATION_MINUTES}")
     private int refreshTokenExpirationMinutes;
 
     public String encodeBase64SecretKey(String secretKey) {
@@ -64,6 +66,19 @@ public class JwtTokenizer {
                 .setExpiration(expiration)
                 .signWith(key)
                 .compact();
+    }
+
+    public void verifyRefreshToken(HttpServletRequest request) {
+        String refreshToken = request.getHeader("Refresh");
+        String base64SecretKey = encodeBase64SecretKey(getSecretKey());
+        try {
+            verifySignature(refreshToken, base64SecretKey);
+            // todo refreshToken 검증되면, 토큰 재발급
+        } catch (ExpiredJwtException ee) {
+            request.setAttribute("exception", ee);
+        } catch (Exception e) {
+            request.setAttribute("exception", e);
+        }
     }
 
     private Key getKeyFromBase64EncodedSecretKey(String base64EncodedSecretKey) {

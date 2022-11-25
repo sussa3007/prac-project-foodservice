@@ -5,6 +5,7 @@ import com.example.foodserviceapp.exception.ErrorCode;
 import com.example.foodserviceapp.exception.ServiceLogicException;
 import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.order.entity.Order;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,12 +22,9 @@ import java.util.List;
 @Component
 @Slf4j
 public class JwtAdvice {
+    @Value("${ADMIN_EMAIL}")
+    private String adminMailAddress;
 
-    private final String adminMailAddress;
-
-    public JwtAdvice(@Value("${mail.address.admin}") String adminMailAddress) {
-        this.adminMailAddress = adminMailAddress;
-    }
 
     @Around("@annotation(JwtPoint)")
     @Transactional

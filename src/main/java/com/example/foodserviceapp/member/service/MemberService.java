@@ -6,6 +6,7 @@ import com.example.foodserviceapp.exception.ErrorCode;
 import com.example.foodserviceapp.exception.ServiceLogicException;
 import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +19,11 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class MemberService {
 
-    private final String adminEmail;
+    @Value("${ADMIN_EMAIL}")
+    private String adminEmail;
 
     private final MemberRepository memberRepository;
 
@@ -28,17 +31,6 @@ public class MemberService {
 
     private final JwtAuthorityUtils authorityUtils;
 
-    public MemberService(
-            @Value("${mail.address.admin}") String adminEmail,
-            MemberRepository memberRepository,
-            PasswordEncoder passwordEncoder,
-            JwtAuthorityUtils authorityUtils
-    ) {
-        this.adminEmail = adminEmail;
-        this.memberRepository = memberRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.authorityUtils = authorityUtils;
-    }
 
     public Member createMember(Member member) {
         String email = member.getEmail();

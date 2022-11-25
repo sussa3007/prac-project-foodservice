@@ -11,6 +11,7 @@ import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.member.service.MemberService;
 import com.example.foodserviceapp.order.entity.Order;
 import com.example.foodserviceapp.order.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,29 +23,17 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class OrderService {
 
-
-    private final String adminEmail;
+    @Value("${ADMIN_EMAIL}")
+    private String adminEmail;
     private final OrderRepository orderRepository;
     private final MemberService memberService;
     private final FoodService foodService;
 
     private final JwtTokenizer jwtTokenizer;
 
-    public OrderService(
-            @Value("${mail.address.admin}") String adminEmail,
-            OrderRepository orderRepository,
-            MemberService memberService,
-            FoodService foodService,
-            JwtTokenizer jwtTokenizer
-    ) {
-        this.adminEmail = adminEmail;
-        this.orderRepository = orderRepository;
-        this.memberService = memberService;
-        this.foodService = foodService;
-        this.jwtTokenizer = jwtTokenizer;
-    }
 
 //    @JwtPoint verifyOrder(order,email)의 findMember에서 검증
     public Order createOrder(Order order, String email) {
