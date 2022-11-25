@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthorityUtils {
-    @Value("${mail.address.admin}")
+    @Value("${ADMIN_EMAIL}")
     private String adminMailAddress;
 
     private final List<GrantedAuthority> ADMIN_ROLES = AuthorityUtils.createAuthorityList("ROLE_ADMIN", "ROLE_USER");

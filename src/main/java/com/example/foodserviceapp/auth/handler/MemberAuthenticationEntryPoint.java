@@ -2,6 +2,7 @@ package com.example.foodserviceapp.auth.handler;
 
 
 import com.example.foodserviceapp.auth.utils.ErrorResponder;
+import com.example.foodserviceapp.exception.ServiceLogicException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -22,9 +23,13 @@ public class MemberAuthenticationEntryPoint implements AuthenticationEntryPoint 
             HttpServletResponse response,
             AuthenticationException authException
     ) throws IOException, ServletException {
-        Exception exception = (Exception) request.getAttribute("exception");
-        ErrorResponder.sendErrorResponse(response, HttpStatus.UNAUTHORIZED);
-        logExceptionMessage(authException, exception);
+        Object exception = request.getAttribute("exception");
+        if (exception instanceof ServiceLogicException) {
+            ErrorResponder.sendErrorResponse(response, ((ServiceLogicException) exception).getErrorCode());
+        } else {
+            ErrorResponder.sendErrorResponse(response, HttpStatus.UNAUTHORIZED);
+        }
+        logExceptionMessage(authException, (Exception) exception);
     }
 
     private void logExceptionMessage(AuthenticationException authException, Exception exception) {

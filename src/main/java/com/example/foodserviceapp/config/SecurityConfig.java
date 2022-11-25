@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .antMatchers(HttpMethod.PATCH, "/members/**").hasRole("USER")
                         .antMatchers(HttpMethod.GET, "/members").hasRole("ADMIN")
                         .antMatchers(HttpMethod.GET, "/members/**").hasAnyRole("USER", "ADMIN")
-                        .antMatchers(HttpMethod.DELETE, "/members/**").hasRole("USER")
+                        .antMatchers(HttpMethod.DELETE, "/members/**").hasAnyRole("USER", "ADMIN")
                         // food authorize
                         .antMatchers(HttpMethod.POST, "/foods").hasRole("ADMIN")
                         .antMatchers(HttpMethod.PATCH, "/foods/**").hasRole("ADMIN")
