@@ -2,7 +2,8 @@ package com.example.foodserviceapp.auth.filter;
 
 import com.example.foodserviceapp.auth.JwtTokenizer;
 import com.example.foodserviceapp.auth.utils.JwtAuthorityUtils;
-import com.example.foodserviceapp.member.entity.Member;
+import com.example.foodserviceapp.exception.ErrorCode;
+import com.example.foodserviceapp.exception.ServiceLogicException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
@@ -39,13 +40,11 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         } catch (SignatureException se) {
             request.setAttribute("exception", se);
         } catch (ExpiredJwtException ee) {
-            request.setAttribute("exception", ee);
+            request.setAttribute("exception", new ServiceLogicException(ErrorCode.EXPIRED_ACCESS_TOKEN));
         } catch (Exception e) {
             request.setAttribute("exception", e);
         }
-
         filterChain.doFilter(request, response);
-
     }
 
     @Override
