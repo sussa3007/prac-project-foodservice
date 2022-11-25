@@ -43,19 +43,19 @@ class MemberServiceTest {
                 .isInstanceOf(ServiceLogicException.class)
                 .hasMessageContaining(ErrorCode.MEMBER_EXISTS.getMessage());
     }
-    @Test
-    @DisplayName("등록 되지 않은 회원 접근 예외 발생- 아이디 조회")
-    void verifiedMemberByIdException() {
-        // Given
-        Long memberId = 1L;
-        // When
-        when(memberRepository.findById(anyLong())).thenReturn(Optional.empty());
-        Throwable throwable = catchThrowable(() -> memberService.findMember(memberId));
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(ServiceLogicException.class)
-                .hasMessageContaining(ErrorCode.MEMBER_NOT_FOUND.getMessage());
-    }
+//    @Test
+//    @DisplayName("등록 되지 않은 회원 접근 예외 발생- 아이디 조회")
+//    void verifiedMemberByIdException() {
+//        // Given
+//        Long memberId = 1L;
+//        // When
+//        when(memberRepository.findById(anyLong())).thenReturn(Optional.empty());
+//        Throwable throwable = catchThrowable(() -> memberService.findMember(memberId));
+//        // Then
+//        assertThat(throwable)
+//                .isInstanceOf(ServiceLogicException.class)
+//                .hasMessageContaining(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+//    }
 
     private Member createTestMember(Long memberId) {
         return Member.builder()

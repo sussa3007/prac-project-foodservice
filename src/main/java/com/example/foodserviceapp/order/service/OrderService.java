@@ -1,6 +1,7 @@
 package com.example.foodserviceapp.order.service;
 
 
+import com.example.foodserviceapp.advice.JwtPagePoint;
 import com.example.foodserviceapp.advice.JwtPoint;
 import com.example.foodserviceapp.auth.JwtTokenizer;
 import com.example.foodserviceapp.exception.ErrorCode;
@@ -10,6 +11,7 @@ import com.example.foodserviceapp.member.entity.Member;
 import com.example.foodserviceapp.member.service.MemberService;
 import com.example.foodserviceapp.order.entity.Order;
 import com.example.foodserviceapp.order.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,33 +23,21 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class OrderService {
 
-
-    private final String adminEmail;
+    @Value("${ADMIN_EMAIL}")
+    private String adminEmail;
     private final OrderRepository orderRepository;
     private final MemberService memberService;
     private final FoodService foodService;
 
     private final JwtTokenizer jwtTokenizer;
 
-    public OrderService(
-            @Value("${mail.address.admin}") String adminEmail,
-            OrderRepository orderRepository,
-            MemberService memberService,
-            FoodService foodService,
-            JwtTokenizer jwtTokenizer
-    ) {
-        this.adminEmail = adminEmail;
-        this.orderRepository = orderRepository;
-        this.memberService = memberService;
-        this.foodService = foodService;
-        this.jwtTokenizer = jwtTokenizer;
-    }
 
-    @JwtPoint
+//    @JwtPoint verifyOrder(order,email)의 findMember에서 검증
     public Order createOrder(Order order, String email) {
-        verifyOrder(order);
+        verifyOrder(order,email);
         updateOption(order);
         updateTotalCount(order);
         Order saveOrder = orderRepository.save(order);
@@ -75,14 +65,18 @@ public class OrderService {
 
 
     @Transactional(readOnly = true)
-    public Page<Order> findOrders(int page, int size) {
-        return orderRepository.findAllByOrder(
-                PageRequest.of(page, size, Sort.by("orderId").descending()));
+    public Page<Order> findOrders(String email, int page, int size) {
+        if (email.equals(adminEmail)) {
+            return orderRepository.findAllByOrder(
+                    PageRequest.of(page, size, Sort.by("orderId").descending()));
+        }
+        throw new ServiceLogicException(ErrorCode.UNAUTHORIZED_ACCESS);
     }
 
     @Transactional(readOnly = true)
-    public Page<Order> findOrdersByMemberId(Long memberId, int page, int size) {
-        Member member = memberService.findMember(memberId);
+//    @JwtPagePoint findMember에서 검증
+    public Page<Order> findOrdersByMemberId(String email, Long memberId, int page, int size) {
+        Member member = memberService.findMember(memberId, email);
         Page<Order> findOrders =
                 orderRepository.findByMemberOrderByOrderIdDesc(member, PageRequest.of(page, size));
         return findOrders;
@@ -128,8 +122,8 @@ public class OrderService {
                 .sum();
     }
 
-    private void verifyOrder(Order order) {
-        Member member = memberService.findMember(order.getMember().getMemberId());
+    private void verifyOrder(Order order,String email) {
+        Member member = memberService.findMember(order.getMember().getMemberId(),email);
         order.setMember(member);
         order.getOrderFoods()
                 .forEach(orderFood ->{
