@@ -7,8 +7,11 @@ import com.example.foodserviceapp.auth.handler.MemberAccessDeniedHandler;
 import com.example.foodserviceapp.auth.handler.MemberAuthenticationEntryPoint;
 import com.example.foodserviceapp.auth.handler.MemberAuthenticationFailureHandler;
 import com.example.foodserviceapp.auth.handler.MemberAuthenticationSuccessHandler;
+import com.example.foodserviceapp.auth.oauth2.OAuth2MemberSuccessHandler;
 import com.example.foodserviceapp.auth.utils.JwtAuthorityUtils;
+import com.example.foodserviceapp.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +20,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -28,9 +35,16 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    @Value("${GOOGLE_AOUTH2_SAMPLEPROJECT_ID}")
+    private String clientId;
+    @Value("${GOOGLE_AOUTH2_SAMPLEPROJECT_SECRETKEY}")
+    private String clientSecret;
+
     private final JwtTokenizer jwtTokenizer;
 
     private final JwtAuthorityUtils authorityUtils;
+
+    private final MemberService memberService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -71,7 +85,10 @@ public class SecurityConfig {
                         .antMatchers(HttpMethod.GET, "/*/orders").hasAnyRole("USER", "ADMIN")
                         .antMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("USER", "ADMIN")
                         .antMatchers(HttpMethod.DELETE, "/orders/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().permitAll());
+                        .anyRequest().permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(new OAuth2MemberSuccessHandler(jwtTokenizer,memberService))
+                );
         return http.build();
     }
 
@@ -104,5 +121,18 @@ public class SecurityConfig {
         }
     }
 
+    private ClientRegistration clientRegistration() {
+        return CommonOAuth2Provider.
+                GOOGLE
+                .getBuilder("google")
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .build();
+    }
 
+    @Bean
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        var clientRegistration = clientRegistration();
+        return new InMemoryClientRegistrationRepository(clientRegistration);
+    }
 }
