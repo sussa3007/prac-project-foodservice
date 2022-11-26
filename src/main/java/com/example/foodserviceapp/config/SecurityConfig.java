@@ -8,10 +8,13 @@ import com.example.foodserviceapp.auth.handler.MemberAuthenticationEntryPoint;
 import com.example.foodserviceapp.auth.handler.MemberAuthenticationFailureHandler;
 import com.example.foodserviceapp.auth.handler.MemberAuthenticationSuccessHandler;
 import com.example.foodserviceapp.auth.oauth2.OAuth2MemberSuccessHandler;
+import com.example.foodserviceapp.auth.oauth2.provider.CustomOAuth2Provider;
+import com.example.foodserviceapp.auth.oauth2.service.CustomOAuth2UserService;
 import com.example.foodserviceapp.auth.utils.JwtAuthorityUtils;
 import com.example.foodserviceapp.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +33,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -40,11 +46,21 @@ public class SecurityConfig {
     @Value("${GOOGLE_AOUTH2_SAMPLEPROJECT_SECRETKEY}")
     private String clientSecret;
 
+    @Value("${KAKAO_AOUTH2_ID}")
+    private String kakaoClientId;
+
+    @Value("${KAKAO_AOUTH2_SECRETKEY}")
+    private String kakaoClientSecret;
+
+
+
     private final JwtTokenizer jwtTokenizer;
 
     private final JwtAuthorityUtils authorityUtils;
 
     private final MemberService memberService;
+
+    private final CustomOAuth2UserService oAuth2UserService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -87,11 +103,11 @@ public class SecurityConfig {
                         .antMatchers(HttpMethod.DELETE, "/orders/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().permitAll())
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler(new OAuth2MemberSuccessHandler(jwtTokenizer,memberService))
+                        .successHandler(new OAuth2MemberSuccessHandler(jwtTokenizer, memberService))
+                        .userInfoEndpoint().userService(oAuth2UserService)
                 );
         return http.build();
     }
-
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -121,18 +137,36 @@ public class SecurityConfig {
         }
     }
 
-    private ClientRegistration clientRegistration() {
-        return CommonOAuth2Provider.
-                GOOGLE
-                .getBuilder("google")
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .build();
+    private ClientRegistration clientRegistration(OAuth2ClientProperties clientProperties, String client) {
+        if("google".equals(client)) {
+            OAuth2ClientProperties.Registration google = clientProperties.getRegistration().get("google");
+            return CustomOAuth2Provider.GOOGLE
+                    .getBuilder(client)
+                    .clientId(google.getClientId())
+                    .clientSecret(clientSecret)
+                    .build();
+        }
+        if("kakao".equals(client)) {
+            OAuth2ClientProperties.Registration kakao = clientProperties.getRegistration().get("kakao");
+            return CustomOAuth2Provider.KAKAO
+                    .getBuilder(client)
+                    .clientId(kakao.getClientId())
+                    .clientSecret(kakaoClientSecret)
+                    .jwkSetUri("temp")
+                    .build();
+        }
+        return null;
     }
 
     @Bean
-    public ClientRegistrationRepository clientRegistrationRepository() {
-        var clientRegistration = clientRegistration();
-        return new InMemoryClientRegistrationRepository(clientRegistration);
+    public ClientRegistrationRepository clientRegistrationRepository(
+            OAuth2ClientProperties oAuth2ClientProperties
+    ) {
+        List<ClientRegistration> registrations = oAuth2ClientProperties
+                .getRegistration().keySet().stream()
+                .map(client -> clientRegistration(oAuth2ClientProperties, client))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return new InMemoryClientRegistrationRepository(registrations);
     }
 }

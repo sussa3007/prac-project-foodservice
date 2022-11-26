@@ -92,9 +92,6 @@ public class MemberService {
         if (findMember.isPresent())
             throw new ServiceLogicException(ErrorCode.MEMBER_EXISTS);
     }
-    public Optional<Member> optionalMemberByEmail(String email) {
-         return memberRepository.findByEmail(email);
-    }
 
     private Member verifiedMemberById(Long memberId) {
         Optional<Member> findMember = memberRepository.findById(memberId);

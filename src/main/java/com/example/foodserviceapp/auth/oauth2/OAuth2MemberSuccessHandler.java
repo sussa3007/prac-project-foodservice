@@ -9,6 +9,7 @@ import com.example.foodserviceapp.member.entity.Point;
 import com.example.foodserviceapp.member.service.MemberService;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -24,9 +25,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Random;
 
 @RequiredArgsConstructor
+@Slf4j
 public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtTokenizer jwtTokenizer;
 
@@ -41,13 +45,15 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
     ) throws IOException, ServletException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = String.valueOf(oAuth2User.getAttributes().get("email"));
-        /* Member가 최초 로그인이라면 createMember를 해준다 */
-        Member member = memberService.optionalMemberByEmail(email)
-                .orElseGet(() -> saveMember(email));
-        Token token = jwtTokenizer.delegateToken(member);
+        String name = String.valueOf(oAuth2User.getAttributes().get("name"));
 
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        log.info("attributes = {}", attributes.toString());
+        /* Member가 최초 로그인이라면 createMember를 해준다 */
+        Member member = saveMember(email, name);
+        Token token = jwtTokenizer.delegateToken(member);
         responseJson(response,token);
-        // TODO Test 용으로 프론트엔드에서 토큰 확인하기 위해 Redirect
+        // TODO Test 프론트엔드에서 토큰 확인하기 위해 Redirect
         redirect(request, response,token);
 
     }
@@ -76,13 +82,13 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         response.getWriter().write(gson.toJson(responseDto,ResponseDto.class));
     }
 
-    private Member saveMember(String email) {
+    private Member saveMember(String email,String name) {
         Random random = new Random();
         Member member = Member.builder()
                 .email(email)
                 .point(new Point())
                 .status(Member.MemberStatus.ACTIVE_MEMBER)
-                .name("GoogleAuthMember")
+                .name(name)
                 .password(String.valueOf(random.nextInt()))
                 .build();
         return memberService.createMember(member);
